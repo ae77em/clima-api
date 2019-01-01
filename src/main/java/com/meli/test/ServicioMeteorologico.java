@@ -14,18 +14,18 @@ public class ServicioMeteorologico {
 
 
     @Transient
-    private static final int DISTANCIA_VULCANO = 1000;
+    private static final double DISTANCIA_VULCANO = 1000.0;
     @Transient
-    private static final int DISTANCIA_BETASOIDE = 2000;
+    private static final double DISTANCIA_BETASOIDE = 2000.0;
     @Transient
-    private static final int DISTANCIA_FERENGI = 500;
+    private static final double DISTANCIA_FERENGI = 500.0;
     @Transient
-    private static final Double RADIAN_UNITARIO = Math.PI / 180.0;
-    @Transient
+    private static final int AREA_CON_LA_QUE_LOS_CONSIDERAMOS_ALINEADOS = 30000;
+
     private Point2D.Double posicionFerengi;
-    @Transient
+
     private Point2D.Double posicionVulcano;
-    @Transient
+
     private Point2D.Double posicionBetasoide;
 
     @Id
@@ -41,10 +41,10 @@ public class ServicioMeteorologico {
 
     public ServicioMeteorologico() {
         this.dia = 0;
-        this.clima = "";
+        this.clima = "- no definido -";
     }
 
-    public long getDia() {
+    public Integer getDia() {
         return this.dia;
     }
 
@@ -52,7 +52,7 @@ public class ServicioMeteorologico {
         return this.clima;
     }
 
-    public void calcularClimaDia(Integer dia){
+    public void setClimaDia(Integer dia){
         this.dia = dia;
         calcularClima();
     }
@@ -69,7 +69,12 @@ public class ServicioMeteorologico {
                 this.clima = "condiciones óptimas de presión y temperatura";
             }
         } else if (solEstaEnTrianguloDePlanetas()) {
-            this.clima = "lluvia";
+            if (planetasEstanEnLineaConSol()) {
+                this.clima = "lluvia";
+            } else {
+                this.clima = "condiciones óptimas de presión y temperatura";
+            }
+
         } else {
             this.clima = "normal";
         }
@@ -88,34 +93,40 @@ public class ServicioMeteorologico {
     alineados entre sí pero no están alineados con el sol.
     */
     private boolean planetasEstanEnLineaEntreEllos() {
-        BigDecimal fx = new BigDecimal(getPosicionFerengi().x);
-        BigDecimal fy = new BigDecimal(getPosicionFerengi().y);
-        BigDecimal bx = new BigDecimal(getPosicionBetasoide().x);
-        BigDecimal by = new BigDecimal(getPosicionBetasoide().y);
-        BigDecimal vx = new BigDecimal(getPosicionVulcano().x);
-        BigDecimal vy = new BigDecimal(getPosicionVulcano().y);
+        BigDecimal xf = new BigDecimal(posicionFerengi.x);
+        BigDecimal yf = new BigDecimal(posicionFerengi.y);
+        BigDecimal xb = new BigDecimal(posicionBetasoide.x);
+        BigDecimal yb = new BigDecimal(posicionBetasoide.y);
+        BigDecimal xv = new BigDecimal(posicionVulcano.x);
+        BigDecimal yv = new BigDecimal(posicionVulcano.y);
 
-        BigDecimal a = (fx.subtract(vx)).multiply(by.subtract(fy));
-        BigDecimal b = (fx.subtract(bx)).multiply(vy.subtract(fy));
-        BigDecimal half = new BigDecimal(0.5);
+        BigDecimal a = xf.multiply(yb.subtract(yv));
+        BigDecimal b = xb.multiply(yv.subtract(yf));
+        BigDecimal c = xv.multiply(yf.subtract(yb));
 
-        BigDecimal area = a.subtract(b).abs().multiply(half);
+        BigDecimal area = a.add(b).add(c).multiply(BigDecimal.valueOf(0.5)).abs();
 
-        return area.compareTo(BigDecimal.valueOf(0.0)) == 0;
+        return area.compareTo(BigDecimal.valueOf(AREA_CON_LA_QUE_LOS_CONSIDERAMOS_ALINEADOS)) < 0;
     }
 
     private boolean planetasEstanEnLineaConSol() {
-        Double Fx = getPosicionFerengi().x;
-        Double Fy = getPosicionFerengi().y;
-        BigDecimal anguloFerengi = new BigDecimal(Math.atan2(Fx, Fy));
-        Double Bx = getPosicionBetasoide().x;
-        Double By = getPosicionBetasoide().y;
-        BigDecimal anguloBetasoide = new BigDecimal(Math.atan2(Bx, By));
-        Double Vx = getPosicionVulcano().x;
-        Double Vy = getPosicionVulcano().y;
-        BigDecimal anguloVulcano = new BigDecimal(Math.atan2(Vx, Vy));
+        Double fx = posicionFerengi.x;
+        Double fy = posicionFerengi.y;
+        BigDecimal anguloFerengi = new BigDecimal(Math.toDegrees(Math.atan2(fx, fy)));
+        Double bx = posicionBetasoide.x;
+        Double by = posicionBetasoide.y;
+        BigDecimal anguloBetasoide = new BigDecimal(Math.toDegrees(Math.atan2(bx, by)));
+        Double vx = posicionVulcano.x;
+        Double vy = posicionVulcano.y;
+        BigDecimal anguloVulcano = new BigDecimal(Math.toDegrees(Math.atan2(vx, vy)));
 
-        return anguloFerengi.compareTo(anguloBetasoide) == 0 && anguloBetasoide.compareTo(anguloVulcano) == 0;
+        BigDecimal diferenciaFyB = anguloFerengi.abs().subtract(anguloBetasoide.abs()).abs();
+        boolean ferengiYBetasoideAlineados = diferenciaFyB.compareTo(BigDecimal.valueOf(0.0)) == 0 || diferenciaFyB.compareTo(BigDecimal.valueOf(180.0)) == 0;
+
+        BigDecimal diferenciaByV = anguloBetasoide.abs().subtract(anguloVulcano.abs()).abs();
+        boolean betasoideYVulcanoAlineados = diferenciaByV.compareTo(BigDecimal.valueOf(0.0)) == 0 || diferenciaByV.compareTo(BigDecimal.valueOf(180.0)) == 0;
+
+        return ferengiYBetasoideAlineados && betasoideYVulcanoAlineados;
     }
 
     private Double signo(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3) {
@@ -138,9 +149,9 @@ public class ServicioMeteorologico {
     horario. Su distancia con respecto al sol es de 500Km.
     */
     private Point2D.Double getPosicionFerengi() {
-        Double radian = -BigDecimal.valueOf(RADIAN_UNITARIO).multiply(BigDecimal.valueOf((dia))).doubleValue();
-        Double x = BigDecimal.valueOf(DISTANCIA_FERENGI).multiply(BigDecimal.valueOf(Math.cos(radian))).doubleValue();
-        Double y = BigDecimal.valueOf(DISTANCIA_FERENGI).multiply(BigDecimal.valueOf(Math.sin(radian))).doubleValue();
+        Double radian = Math.toRadians(-dia);
+        Double x = BigDecimal.valueOf(DISTANCIA_FERENGI).multiply(BigDecimal.valueOf(Math.cos(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+        Double y = BigDecimal.valueOf(DISTANCIA_FERENGI).multiply(BigDecimal.valueOf(Math.sin(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 
         return new Point2D.Double(x, y);
     }
@@ -150,9 +161,9 @@ public class ServicioMeteorologico {
     horario. Su distancia con respecto al sol es de 2000Km.
     */
     private Point2D.Double getPosicionBetasoide() {
-        Double radian = BigDecimal.valueOf(-3).multiply(BigDecimal.valueOf(RADIAN_UNITARIO)).multiply(BigDecimal.valueOf((dia))).doubleValue();
-        Double x = BigDecimal.valueOf(DISTANCIA_BETASOIDE).multiply(BigDecimal.valueOf(Math.cos(radian))).doubleValue();
-        Double y = BigDecimal.valueOf(DISTANCIA_BETASOIDE).multiply(BigDecimal.valueOf(Math.sin(radian))).doubleValue();
+        Double radian = Math.toRadians(-3 * dia);
+        Double x = BigDecimal.valueOf(DISTANCIA_BETASOIDE).multiply(BigDecimal.valueOf(Math.cos(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+        Double y = BigDecimal.valueOf(DISTANCIA_BETASOIDE).multiply(BigDecimal.valueOf(Math.sin(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 
         return new Point2D.Double(x, y);
     }
@@ -162,9 +173,9 @@ public class ServicioMeteorologico {
     anti­horario, su distancia con respecto al sol es de 1000Km.
     */
     private Point2D.Double getPosicionVulcano() {
-        Double radian = BigDecimal.valueOf(5).multiply(BigDecimal.valueOf(RADIAN_UNITARIO)).multiply(BigDecimal.valueOf((dia))).doubleValue();
-        Double x = BigDecimal.valueOf(DISTANCIA_VULCANO).multiply(BigDecimal.valueOf(Math.cos(radian))).doubleValue();
-        Double y = BigDecimal.valueOf(DISTANCIA_VULCANO).multiply(BigDecimal.valueOf(Math.sin(radian))).doubleValue();
+        Double radian = Math.toRadians(5 * dia);
+        Double x = BigDecimal.valueOf(DISTANCIA_VULCANO).multiply(BigDecimal.valueOf(Math.cos(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+        Double y = BigDecimal.valueOf(DISTANCIA_VULCANO).multiply(BigDecimal.valueOf(Math.sin(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 
         return new Point2D.Double(x, y);
     }

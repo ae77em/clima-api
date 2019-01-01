@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
-
 
 @Component
 public class ServicioMeteorologicoJobs {
@@ -20,7 +18,8 @@ public class ServicioMeteorologicoJobs {
     private static final int CANTIDAD_DIAS_10_ANIOS = 3600;
 
 
-    @Scheduled(cron = "0 0 * * * *")
+    //@Scheduled(cron = "0 0 * * * *")
+    @Scheduled(fixedRate = 3600000) // cada 1 h
     public void cargarEstadoClimaProximosDiezAnios(){
         ServicioMeteorologico servicioMeteorologico;
 
@@ -30,7 +29,7 @@ public class ServicioMeteorologicoJobs {
 
         for (int dia = 0; dia < CANTIDAD_DIAS_10_ANIOS; ++dia) {
             servicioMeteorologico = new ServicioMeteorologico();
-            servicioMeteorologico.calcularClimaDia(dia);
+            servicioMeteorologico.setClimaDia(dia);
             repository.save(servicioMeteorologico);
         }
 

@@ -28,5 +28,6 @@ targetCompatibility = 1.8
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-data-mongodb")
+    implementation('one.util:streamex:0.6.8')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }

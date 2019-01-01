@@ -9,7 +9,7 @@ public class ServicioMeteorologicoTests {
     public void planetasAlineadosConSolTest(){
         ServicioMeteorologico sm = new ServicioMeteorologico();
 
-        sm.calcularClimaDia(0);
+        sm.setClimaDia(0);
 
         assertEquals(sm.getClima(), "sequia");
     }
@@ -18,7 +18,7 @@ public class ServicioMeteorologicoTests {
     public void planetasFormanTrianguloSinSolDentroTest(){
         ServicioMeteorologico sm = new ServicioMeteorologico();
 
-        sm.calcularClimaDia(2);
+        sm.setClimaDia(2);
 
         assertEquals(sm.getClima(), "normal");
     }
