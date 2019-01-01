@@ -7,12 +7,11 @@ import org.springframework.stereotype.Component;
 
 import java.awt.geom.Point2D;
 import java.math.BigDecimal;
+import java.util.Calendar;
 
 @Component
 @Document(collection = "servicio_meteorologico")
-public class ServicioMeteorologico {
-
-
+public class EstadoClima {
     @Transient
     private static final double DISTANCIA_VULCANO = 1000.0;
     @Transient
@@ -21,6 +20,8 @@ public class ServicioMeteorologico {
     private static final double DISTANCIA_FERENGI = 500.0;
     @Transient
     private static final int AREA_CON_LA_QUE_LOS_CONSIDERAMOS_ALINEADOS = 30000;
+    @Transient
+    private int dayOfYear = Math.min(360, Calendar.getInstance().get(Calendar.DAY_OF_YEAR));
 
     private Point2D.Double posicionFerengi;
 
@@ -33,13 +34,14 @@ public class ServicioMeteorologico {
 
     private Integer dia;
     private String clima;
+    private Double areaTrianguloGenerado;
 
-    public ServicioMeteorologico(Integer dia, String clima) {
+    public EstadoClima(Integer dia, String clima) {
         this.dia = dia;
         this.clima = clima;
     }
 
-    public ServicioMeteorologico() {
+    public EstadoClima() {
         this.dia = 0;
         this.clima = "- no definido -";
     }
@@ -52,32 +54,13 @@ public class ServicioMeteorologico {
         return this.clima;
     }
 
-    public void setClimaDia(Integer dia){
-        this.dia = dia;
-        calcularClima();
+    public Double getAreaTrianguloGenerado() {
+        return this.areaTrianguloGenerado;
     }
 
-    private void calcularClima() {
-        this.posicionFerengi = getPosicionFerengi();
-        this.posicionVulcano = getPosicionVulcano();
-        this.posicionBetasoide = getPosicionBetasoide();
-
-        if (planetasEstanEnLineaEntreEllos()) {
-            if (planetasEstanEnLineaConSol()) {
-                this.clima = "sequia";
-            } else {
-                this.clima = "condiciones óptimas de presión y temperatura";
-            }
-        } else if (solEstaEnTrianguloDePlanetas()) {
-            if (planetasEstanEnLineaConSol()) {
-                this.clima = "lluvia";
-            } else {
-                this.clima = "condiciones óptimas de presión y temperatura";
-            }
-
-        } else {
-            this.clima = "normal";
-        }
+    public void setClimaDia(Integer dia) {
+        this.dia = dia;
+        calcularClima();
     }
 
     /*
@@ -92,6 +75,24 @@ public class ServicioMeteorologico {
     Las condiciones óptimas de presión y temperatura se dan cuando los tres planetas están
     alineados entre sí pero no están alineados con el sol.
     */
+    private void calcularClima() {
+        this.posicionFerengi = getPosicionFerengi();
+        this.posicionVulcano = getPosicionVulcano();
+        this.posicionBetasoide = getPosicionBetasoide();
+
+        if (planetasEstanEnLineaEntreEllos()) {
+            if (planetasEstanEnLineaConSol()) {
+                this.clima = "sequia";
+            } else {
+                this.clima = "condiciones óptimas de presión y temperatura";
+            }
+        } else if (solEstaEnTrianguloDePlanetas()) {
+            this.clima = "lluvia";
+        } else {
+            this.clima = "normal";
+        }
+    }
+
     private boolean planetasEstanEnLineaEntreEllos() {
         BigDecimal xf = new BigDecimal(posicionFerengi.x);
         BigDecimal yf = new BigDecimal(posicionFerengi.y);
@@ -105,6 +106,8 @@ public class ServicioMeteorologico {
         BigDecimal c = xv.multiply(yf.subtract(yb));
 
         BigDecimal area = a.add(b).add(c).multiply(BigDecimal.valueOf(0.5)).abs();
+
+        areaTrianguloGenerado = area.doubleValue();
 
         return area.compareTo(BigDecimal.valueOf(AREA_CON_LA_QUE_LOS_CONSIDERAMOS_ALINEADOS)) < 0;
     }
@@ -149,7 +152,7 @@ public class ServicioMeteorologico {
     horario. Su distancia con respecto al sol es de 500Km.
     */
     private Point2D.Double getPosicionFerengi() {
-        Double radian = Math.toRadians(-dia);
+        Double radian = Math.toRadians(-(dia + dayOfYear));
         Double x = BigDecimal.valueOf(DISTANCIA_FERENGI).multiply(BigDecimal.valueOf(Math.cos(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
         Double y = BigDecimal.valueOf(DISTANCIA_FERENGI).multiply(BigDecimal.valueOf(Math.sin(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 
@@ -161,7 +164,7 @@ public class ServicioMeteorologico {
     horario. Su distancia con respecto al sol es de 2000Km.
     */
     private Point2D.Double getPosicionBetasoide() {
-        Double radian = Math.toRadians(-3 * dia);
+        Double radian = Math.toRadians(-3 * (dia + dayOfYear));
         Double x = BigDecimal.valueOf(DISTANCIA_BETASOIDE).multiply(BigDecimal.valueOf(Math.cos(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
         Double y = BigDecimal.valueOf(DISTANCIA_BETASOIDE).multiply(BigDecimal.valueOf(Math.sin(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 
@@ -173,7 +176,7 @@ public class ServicioMeteorologico {
     anti­horario, su distancia con respecto al sol es de 1000Km.
     */
     private Point2D.Double getPosicionVulcano() {
-        Double radian = Math.toRadians(5 * dia);
+        Double radian = Math.toRadians(5 * (dia + dayOfYear));
         Double x = BigDecimal.valueOf(DISTANCIA_VULCANO).multiply(BigDecimal.valueOf(Math.cos(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
         Double y = BigDecimal.valueOf(DISTANCIA_VULCANO).multiply(BigDecimal.valueOf(Math.sin(radian))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 

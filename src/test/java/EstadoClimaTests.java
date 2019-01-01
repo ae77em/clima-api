@@ -1,13 +1,13 @@
-import com.meli.test.ServicioMeteorologico;
+import com.meli.test.EstadoClima;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class ServicioMeteorologicoTests {
+public class EstadoClimaTests {
 
     @Test
     public void planetasAlineadosConSolTest(){
-        ServicioMeteorologico sm = new ServicioMeteorologico();
+        EstadoClima sm = new EstadoClima();
 
         sm.setClimaDia(0);
 
@@ -16,7 +16,7 @@ public class ServicioMeteorologicoTests {
 
     @Test
     public void planetasFormanTrianguloSinSolDentroTest(){
-        ServicioMeteorologico sm = new ServicioMeteorologico();
+        EstadoClima sm = new EstadoClima();
 
         sm.setClimaDia(2);
 
