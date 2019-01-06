@@ -75,6 +75,10 @@ Url: <http://meli-test-api.herokuapp.com/periodos-condiciones-optimas>
 
 Respuesta de ejemplo:
 
-```{"clima":"condiciones óptimas de presión y temperatura","periodos":\[\[852\],\[946\]\],"cantidad\_periodos":2}```
+```
+{"clima": "condiciones óptimas de presión y temperatura",
+ "periodos": [ [852], [946] ],
+ "cantidad_periodos":2}
+ ```
 
 Es decir, hay dos períodos, de un día cada uno, correspondientes a los días 852 y 946 a partir del día de hoy.
