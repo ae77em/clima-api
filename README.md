@@ -20,7 +20,7 @@ Parámetros:
 
 Respuesta de ejemplo:
 
-{"clima":"lluvia","dia":150}
+```{"clima":"lluvia","dia":150}```
 
 Calcular estados
 
@@ -55,53 +55,17 @@ Url: <http://meli-test-api.herokuapp.com/periodos-lluvia>
 
 Respuesta de ejemplo:
 
+```
 {
-
  "clima":"lluvia",
-
- "periodos":\[
-
- \[ 22, 23,
- 24,
- 25,
- 26,
- 27,
- 28
- \],
-
- \[
- 67,
- 68,
- 69,
- 70,
- 71,
- 72,
- 73,
- 74,
- 75,
- 76,
- 77,
- 78,
- 79,
- 80,
- 81,
- 82,
- 83,
- 84,
- 85,
- 86,
- 87,
- 88
- \]
- \],
-
- "cantidad\_periodos":2,
- "picos\_maximos":\[
- 28,
- 77
- \]
-
+ "periodos":[
+   [ 22, 23, 24, 25, 26, 27, 28 ],
+   [ 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88 ]
+ ],
+ "cantidad_periodos":2,
+ "picos_maximos": [ 28, 77 ]
 }
+```
 
 **Períodos de condiciones óptimas**
 
@@ -111,6 +75,6 @@ Url: <http://meli-test-api.herokuapp.com/periodos-condiciones-optimas>
 
 Respuesta de ejemplo:
 
-{"clima":"condiciones óptimas de presión y temperatura","periodos":\[\[852\],\[946\]\],"cantidad\_periodos":2}
+```{"clima":"condiciones óptimas de presión y temperatura","periodos":\[\[852\],\[946\]\],"cantidad\_periodos":2}```
 
 Es decir, hay dos períodos, de un día cada uno, correspondientes a los días 852 y 946 a partir del día de hoy.
